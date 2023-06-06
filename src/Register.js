@@ -1,9 +1,11 @@
 import { useRef, useState, useEffect } from "react";
 import { faCheck, faTimes, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import axios from "./api/axios";
 
 const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
+
 
 const Register = () => {
   const userRef = useRef();
@@ -60,8 +62,35 @@ const Register = () => {
       return;
     }
 
-    console.log(user, pwd);
-    setSuccess(true);
+    // console.log(user, pwd);
+    // setSuccess(true);
+
+    try {
+      const response = await axios.post(
+        "/register", 
+        JSON.stringify({ user, pwd }),
+        {
+          headers: { "Content-type": "application/json" },
+          withCredentials: true
+        }
+      );
+      console.log(response.data);
+      console.log(response.accessToken);
+      console.log(JSON.stringify(response));
+      console.log("For backend auth APIs - run 'mongo_async_crud' project in backend folder")
+      setSuccess(true);
+    } catch(error) {
+      //If haven't heard back from the server (no error message)
+      //Issue like - no internet connection
+      if(!error?.response) {
+        setErrMsg("No server response!")
+      } else if (error.response?.status === 409) {
+        setErrMsg("Username already taken!");
+      } else {
+        setErrMsg("Registration failed!");
+      }
+      errRef.current.focus()
+    }
 
   }
 
