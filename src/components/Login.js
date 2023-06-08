@@ -1,10 +1,11 @@
-import { useRef, useState, useEffect, useContext } from "react";
-import axios from "./api/axios";
-import { AuthContext } from "./context/authContext";
+import { useRef, useState, useEffect } from "react";
+import axios from "../api/axios";
+import { useAuth } from "../hooks/useAuth";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 function Login() {
 
-  const { setAuth } = useContext(AuthContext);
+  const { setAuth } = useAuth();
 
   const userRef = useRef();
   const errRef = useRef();
@@ -12,7 +13,11 @@ function Login() {
   const [user, setUser] = useState("");
   const [pwd, setPwd] = useState("");
   const [errMsg, setErrMsg] = useState("");
-  const [success, setSuccess] = useState(false);
+
+  //Hooks to Navigate user on login
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
 
   //Auto-Focus the first input element on page load
   useEffect(() => {
@@ -49,7 +54,8 @@ function Login() {
       setUser("");
       setPwd("");
       
-      setSuccess(true);
+      //Navigate user on succesful login (To whichever protected route they intended to access)
+      navigate(from, { replace: true });
 
     } catch(error) {
 
@@ -70,17 +76,7 @@ function Login() {
   }
 
   return (
-    <>
-    { success ? (
-      <section>
-        <h1>You are Logged in!</h1>
-        <br />
-        <p>
-          <a href="#">Got to home</a>
-        </p>
-      </section>
-    ) : 
-    (<section>
+    <section>
       <p 
         ref={errRef}
         className={errMsg ? "errmsg" : "offscreen"}
@@ -122,8 +118,7 @@ function Login() {
           <a href="#">Sign up</a>
         </span> 
       </p>
-    </section>)}
-    </>
+    </section>
   )
 }
 
